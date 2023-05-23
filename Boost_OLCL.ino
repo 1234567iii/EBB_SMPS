@@ -73,12 +73,51 @@ void setup() {
     CL_mode = digitalRead(3); // input from the OL_CL switch
     Boost_mode = digitalRead(2); // input from the Buck_Boost switch
 
+/*
+ * 测量光伏板的input Vin Iin
+ * 在boost vb1是vin(设Iin=Il )
+ * initial set P=0, vb0=0, ib0=0，
+ * delta= 0.01
+ * deltaV= ;
+    if(vb1*iL>P){
+      if(vb1>vb0){
+        duty =  duty - delta;
+        Vref = vref - deltaV;
+        vb0=vb1;
+      }
+      else if(vb1<vb0){
+      duty = duty + delta;
+      vref= vref + deltaV;
+      vb0=vb1;
+      }
+     }
+    else if(vb1*iL<P){
+      if(vb1>vb0){
+        duty =  duty - delta; 
+        vref= vref - deltaV
+        vb0=vb1;
+      }
+      else if(vb1<vb0){
+      duty = duty + delta;
+      vref = vref - deltaV;
+      vb0=vb1;
+      }
+      }
+      else{
+      duty = duty;
+      
+      }
+      
+
+
+      */
     if (Boost_mode){
       if (CL_mode) { // Closed Loop Buck
           // The closed loop path has a voltage controller cascaded with a current controller. The voltage controller
           // creates a current demand based upon the voltage error. This demand is saturated to give current limiting.
           // The current loop then gives a duty cycle demand based upon the error between demanded current and measured
           // current
+          
           current_limit = 0.69; 
           ev = vref - vb;  //voltage error at this time
           cv=pidv(ev);  //voltage pid
@@ -267,8 +306,8 @@ float pidi(float pid_input){
   e1i = e0i; // update last time's error
   return u0i;
 }
-
-float pidiBoost(float pid_input){
+//这个是最前面的controller
+float pidP(float pid_input){
   float e_integration;
   e0i = pid_input;
   e_integration=e0i;
@@ -280,7 +319,7 @@ float pidiBoost(float pid_input){
     e_integration = 0;
   }
   
-  delta_ui = kpi*(e0i-e1i) + kii*Ts*e_integration + kdi/Ts*(e0i-2*e1i+e2i); //incremental PID programming avoids integrations.
+  delta_ui = kpp*(e0i-e1i) + kip*Ts*e_integration + kdp/Ts*(e0i-2*e1i+e2i); //incremental PID programming avoids integrations.
   u0i = u1i - delta_ui;  //this time's control output
 
   //output limitation
